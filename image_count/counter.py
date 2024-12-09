@@ -30,9 +30,8 @@ def add_to_count(class_name, position, somedistance):
     if (class_name in list_class):
         eligible = False
         for i in list_pos:
-            #(((position_x-i[0])^2)+((position_y-i[1])^2))<somedistance
-            #if the above is true keep going in the for loop
-            #if the above is false, eligible = True and break out
+            #if true keep going in the for loop
+            #if false, eligible = True and break out
             if ((((position[0]-i[0])^2)+((position[1]-i[1])^2))>somedistance):
                 eligible = True
                 break
@@ -44,13 +43,17 @@ def add_to_count(class_name, position, somedistance):
 
 
 #Takes the diff angles and wall, and calculates whether 
-def bresenhams_line_algorithm(alpha, theta, gamma, dist, wall, robot_x, robot_y):
-    beta = alpha +theta + gamma #Assuming beta is a number from 0 to 359.999
+def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
+    beta = theta + gamma
+    #Make beta a number from 0 to 2pi
+    while (beta > 2*math.pi):
+        beta -= 2*math.pi
+    while (beta < 0):
+        beta += 2*math.pi  
     xdist = dist*math.cos(beta)
     ydist = dist*math.sin(beta)
     x = robot_x
     y = robot_y
-    mark = []
     if (beta <= math.pi/4):
         while (x<xdist):
             x += 1
@@ -228,10 +231,15 @@ class Class_Counter(Node):
             picture_y = (left+right)/2#Consider adding check to avoid extra chair detection
             angle = picture_x *5#some calculation CHANGE THIS
             
-            #CHeck occupancygrid for the code below. The origin isn't 0,0??
-            picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
+            #Check occupancygrid for the code below. After checking, looks like the robot_x and robot_y are taken with respect to the origin, and thus no need to take into account the map_originX and map_originY
+            #picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
+            #TEMPORARY
+            dist = 50
+            picture_mapped_location = bresenhams_line_algorithm(robot_yaw, angle, dist, wall, robot_x, robot_y)
             #for each step forward in bl, check if it's a wall
             if (picture_mapped_location is not None):
+                #TEMPORARY
+                somedistance = 5
                 add_to_count(class_name, picture_mapped_location, somedistance) #add somedistance, can divide by map resolution also
         self.latest_msg1 = None
         self.latest_msg2 = None
