@@ -27,8 +27,12 @@ def euler_from_quaternion(x, y, z, w):
 
 #Given detected class and its position on the map, add to the count if it's not too close to existing stored positions
 def add_to_count(class_name, position, somedistance):
+    print("add_to_count just ran")
     if (class_name in list_class):
         eligible = False
+        #If list_pos is empty, make the first entry eligible
+        if not list_pos:
+            eligible = True
         for i in list_pos:
             #if true keep going in the for loop
             #if false, eligible = True and break out
@@ -44,6 +48,7 @@ def add_to_count(class_name, position, somedistance):
 
 #Takes the diff angles and wall, and calculates whether 
 def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
+    print("bla just ran")
     beta = theta + gamma
     #Make beta a number from 0 to 2pi
     while (beta > 2*math.pi):
@@ -188,10 +193,10 @@ class Class_Counter(Node):
             left = r.left
             bottom = r.bottom
             right = r.right
-            self.get_logger().info(
-                f"Received YOLO detection: "
-                f"class_name={class_name}, top={top}, left={left}, bottom={bottom}, right={right}"
-            )
+            #self.get_logger().info(
+            #    f"Received YOLO detection: "
+            #    f"class_name={class_name}, top={top}, left={left}, bottom={bottom}, right={right}"
+            #)
             self.perform_logic(class_name, top, left, bottom, right)
     
     def map_callback(self, msg):
@@ -212,6 +217,7 @@ class Class_Counter(Node):
                                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
 
     def perform_logic(self, class_name, top, left, bottom, right):
+        print("performing logic")
         # Ensure both messages are available
         if self.map_msg is not None and self.odom_msg is not None and class_name is not None:
             #Extract walls from map data
