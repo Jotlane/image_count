@@ -9,7 +9,7 @@ import math
 
 list_class = ["cat", "dog", "chair", "car", "apple", "stop sign"]
 list_pos = [] #Contains [x,y]
-dict_count = {} #Contains "cat": 1
+dict_count = {"cat": 0, "dog": 0, "chair": 0, "car": 0, "apple": 0, "stop sign": 0} #Contains "cat": 1
 
 
 def euler_from_quaternion(x, y, z, w):
@@ -27,8 +27,9 @@ def euler_from_quaternion(x, y, z, w):
 
 #Given detected class and its position on the map, add to the count if it's not too close to existing stored positions
 def add_to_count(class_name, position, somedistance):
-    print("add_to_count just ran")
+    print(class_name + " detected at " + str(position[0]) + ", " + str(position[1]))
     if (class_name in list_class):
+        #print(class_name + " is in list_class")
         eligible = False
         #If list_pos is empty, make the first entry eligible
         if not list_pos:
@@ -41,20 +42,29 @@ def add_to_count(class_name, position, somedistance):
                 break
         if (eligible == True):
             dict_count[class_name] += 1
-            list_pos.apppend(position)
+            list_pos.append(position)
             print(class_name + " added")
             print(dict_count)
 
 
 #Takes the diff angles and wall, and calculates whether 
 def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
-    print("bla just ran")
+    #print("bla just ran")
     beta = theta + gamma
+    print("beta: " +str(beta))
+    print("theta: " +str(theta))
+    print("gamma: " +str(gamma))
+    #add the robot angle relative to origin here PLS
+    #and fix the whole x/y row/column thing. swap back?? change the robot_x robot_y??
+    #figure out how the initial robot yaw is decided
+    #and also how the initial map angle is decided
     #Make beta a number from 0 to 2pi
+    #let it run and see how the robot yaw and map angle stuff changes
     while (beta > 2*math.pi):
         beta -= 2*math.pi
     while (beta < 0):
         beta += 2*math.pi  
+    print("beta(new): " +str(beta))
     xdist = dist*math.cos(beta)
     ydist = dist*math.sin(beta)
     x = robot_x
@@ -63,98 +73,98 @@ def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
         while (x<xdist):
             x += 1
             if (x*math.tan(beta)<y+1):
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
             else:
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
                 y += 1
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
     elif (beta <= math.pi/2):
         while (y<ydist):
             y += 1
             if (y/math.tan(beta)<x+1):
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
             else:
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
                 x += 1
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
     elif (beta <= math.pi*3/4):
         while (y<ydist):
             y += 1
             if (abs(y/math.tan(beta))<abs(x-1)):
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
             else:
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
                 x -= 1
-                if ([x,y-1] in wall):
-                    return [x,y-1]
+                if ([y-1,x] in wall):
+                    return [y-1,x]
     elif (beta <= math.pi):
         while (abs(x)<abs(xdist)):
             x -= 1
             if (abs(x*math.tan(beta))<y+1):
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
             else:
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
                 y += 1
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
     elif (beta <= math.pi*5/4):
         while (abs(x)<abs(xdist)):
             x -= 1
             if (abs(x*math.tan(beta))<abs(y-1)):
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
             else:
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
                 y -= 1
-                if ([x+1,y] in wall):
-                    return [x+1,y]
+                if ([y,x+1] in wall):
+                    return [y,x+1]
     elif (beta <= math.pi*3/2):
         while (abs(y)<abs(ydist)):
             y -= 1
             if (abs(y/math.tan(beta))<abs(x+1)):
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
             else:
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
                 x -= 1
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
     elif (beta <= math.pi*7/4):
         while (abs(y)<abs(ydist)):
             y -= 1
             if (abs(y/math.tan(beta))<abs(x+1)):
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
             else:
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
                 x += 1
-                if ([x,y+1] in wall):
-                    return [x,y+1]
+                if ([y+1,x] in wall):
+                    return [y+1,x]
     elif (beta <= math.pi*2):
         while (abs(x)<abs(xdist)):
             x += 1
             if (abs(x*math.tan(beta))<abs(y-1)):
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
             else:
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
                 y -= 1
-                if ([x-1,y] in wall):
-                    return [x-1,y]
+                if ([y,x-1] in wall):
+                    return [y,x-1]
     else:
         print("Angle greater than 2pi error")
     return None
@@ -184,6 +194,8 @@ class Class_Counter(Node):
         self.map_width = None
         self.map_height = None
         self.map_data = None
+        self.map_pose_origin = None
+        self.map_yaw = None
 
     def yolo_callback(self, data):
         latest_yolo_msg = data
@@ -207,6 +219,11 @@ class Class_Counter(Node):
         self.map_width = self.map_msg.info.width
         self.map_height = self.map_msg.info.height
         self.map_data = self.map_msg.data
+        print(self.map_msg.info.origin.orientation.x)
+        print(self.map_msg.info.origin.orientation.y)
+        print(self.map_msg.info.origin.orientation.z)
+        print(self.map_msg.info.origin.orientation.w)
+        self.map_yaw = euler_from_quaternion(self.map_msg.info.origin.orientation.x, self.map_msg.info.origin.orientation.y, self.map_msg.info.origin.orientation.z, self.map_msg.info.origin.orientation.w)
 
 
     def odom_callback(self, msg):
@@ -217,13 +234,21 @@ class Class_Counter(Node):
                                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
 
     def perform_logic(self, class_name, top, left, bottom, right):
-        print("performing logic")
+        print(self.odom_yaw)
         # Ensure both messages are available
         if self.map_msg is not None and self.odom_msg is not None and class_name is not None:
             #Extract walls from map data
+            print("og wall:")
+            print(self.map_data)
             reshaped_data = np.array(self.map_data).reshape(self.map_height, self.map_width)
+            print("reshaped_data:")
+            print(reshaped_data)
             wall = np.where(reshaped_data == 100)
-            wall = np.column_stack(wall)
+            print("wall 1:")
+            print(wall)
+            wall = np.column_stack(wall) #check what this actually is
+            print("wall2")
+            print(wall)
 
             #Robot position to calculate angle from map frame
             robot_x = int((self.odom_y - self.map_originY)/self.map_resolution)
@@ -235,8 +260,15 @@ class Class_Counter(Node):
             #Picture xy to calculate angle of picture from lens
             picture_x = (top+bottom)/2
             picture_y = (left+right)/2#Consider adding check to avoid extra chair detection
-            angle = picture_x *5#some calculation CHANGE THIS
-            
+            angle = (picture_x-160)*(math.pi/2)/(320.0) #convert location on screen to angle (roughly) 
+            print("robot_x: " + str(robot_x))
+            print("robot_y: " + str(robot_y))
+            print("robot_yaw: " + str(robot_yaw))
+            print("map_originX: " + str(self.map_originX))
+            print("map_originY: " + str(self.map_originY))
+            print("odom_x: " + str(self.odom_x))
+            print("odom_y: " + str(self.odom_y))
+            print("map_yaw: " + str(self.map_yaw))
             #Check occupancygrid for the code below. After checking, looks like the robot_x and robot_y are taken with respect to the origin, and thus no need to take into account the map_originX and map_originY
             #picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
             #TEMPORARY
