@@ -47,126 +47,115 @@ def add_to_count(class_name, position, somedistance):
             print(dict_count)
 
 
-#Takes the diff angles and wall, and calculates whether 
-def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
+#Takes the diff angles and wall, and draws a line from the robot at that angle, sending the location when it hits a wall
+def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_column, robot_row):
     #print("bla just ran")
     beta = theta + gamma
-    print("beta: " +str(beta))
-    print("theta: " +str(theta))
-    print("gamma: " +str(gamma))
-    #add the robot angle relative to origin here PLS
-    #and fix the whole x/y row/column thing. swap back?? change the robot_x robot_y??
-    #figure out how the initial robot yaw is decided
-    #and also how the initial map angle is decided
-    #Make beta a number from 0 to 2pi
-    #let it run and see how the robot yaw and map angle stuff changes
-    #coordinates will change for the position of the animals because the map expands and all, must make it relative to the origin
-    #I guess store the true position instead
+
     while (beta > 2*math.pi):
         beta -= 2*math.pi
     while (beta < 0):
         beta += 2*math.pi  
-    print("beta(new): " +str(beta))
     xdist = dist*math.cos(beta)
     ydist = dist*math.sin(beta)
-    x = robot_x
-    y = robot_y
+    c = robot_column
+    r = robot_row
     if (beta <= math.pi/4):
-        while (x<xdist):
-            x += 1
-            if (x*math.tan(beta)<y+1):
-                if ([y,x-1] in wall):
-                    return [y,x-1]
+        while (c<xdist):
+            c += 1
+            if (abs(c*math.tan(beta))<abs(r+1)):
+                if ([c-1,r] in wall):
+                    return [c-1,r]
             else:
-                if ([y,x-1] in wall):
-                    return [y,x-1]
-                y += 1
-                if ([y,x-1] in wall):
-                    return [y,x-1]
+                if ([c-1,r] in wall):
+                    return [c-1,r]
+                c -= 1
+                if ([c-1,r] in wall):
+                    return [c-1,r]
     elif (beta <= math.pi/2):
-        while (y<ydist):
-            y += 1
-            if (y/math.tan(beta)<x+1):
-                if ([y-1,x] in wall):
-                    return [y-1,x]
+        while (r<ydist):
+            r += 1
+            if (abs(r/math.tan(beta))<abs(c+1)):
+                if ([c,r-1] in wall):
+                    return [c,r-1]
             else:
-                if ([y-1,x] in wall):
-                    return [y-1,x]
-                x += 1
-                if ([y-1,x] in wall):
-                    return [y-1,x]
+                if ([c,r-1] in wall):
+                    return [c,r-1]
+                c += 1
+                if ([c,r-1] in wall):
+                    return [c,r-1]
     elif (beta <= math.pi*3/4):
-        while (y<ydist):
-            y += 1
-            if (abs(y/math.tan(beta))<abs(x-1)):
-                if ([y-1,x] in wall):
-                    return [y-1,x]
+        while (r<ydist):
+            r += 1
+            if (abs(r/math.tan(beta))<abs(c-1)):
+                if ([c,r-1] in wall):
+                    return [c,r-1]
             else:
-                if ([y-1,x] in wall):
-                    return [y-1,x]
-                x -= 1
-                if ([y-1,x] in wall):
-                    return [y-1,x]
+                if ([c,r-1] in wall):
+                    return [c,r-1]
+                c += 1
+                if ([c,r-1] in wall):
+                    return [c,r-1]
     elif (beta <= math.pi):
-        while (abs(x)<abs(xdist)):
-            x -= 1
-            if (abs(x*math.tan(beta))<y+1):
-                if ([y,x+1] in wall):
-                    return [y,x+1]
+        while (abs(c)<abs(xdist)):
+            c -= 1
+            if (abs(c*math.tan(beta))<abs(r+1)):
+                if ([c+1,r] in wall):
+                    return [c+1,r]
             else:
-                if ([y,x+1] in wall):
-                    return [y,x+1]
-                y += 1
-                if ([y,x+1] in wall):
-                    return [y,x+1]
+                if ([c+1,r] in wall):
+                    return [c+1,r]
+                r += 1
+                if ([c+1,r] in wall):
+                    return [c+1,r]
     elif (beta <= math.pi*5/4):
-        while (abs(x)<abs(xdist)):
-            x -= 1
-            if (abs(x*math.tan(beta))<abs(y-1)):
-                if ([y,x+1] in wall):
-                    return [y,x+1]
+        while (abs(c)<abs(xdist)):
+            c -= 1
+            if (abs(c*math.tan(beta))<abs(r-1)):
+                if ([c+1,r] in wall):
+                    return [c+1,r]
             else:
-                if ([y,x+1] in wall):
-                    return [y,x+1]
-                y -= 1
-                if ([y,x+1] in wall):
-                    return [y,x+1]
+                if ([c+1,r] in wall):
+                    return [c+1,r]
+                r -= 1
+                if ([c+1,r] in wall):
+                    return [c+1,r]
     elif (beta <= math.pi*3/2):
-        while (abs(y)<abs(ydist)):
-            y -= 1
-            if (abs(y/math.tan(beta))<abs(x+1)):
-                if ([y+1,x] in wall):
-                    return [y+1,x]
+        while (abs(r)<abs(ydist)):
+            r -= 1
+            if (abs(r/math.tan(beta))<abs(c-1)):
+                if ([c,r+1] in wall):
+                    return [c,r+1]
             else:
-                if ([y+1,x] in wall):
-                    return [y+1,x]
-                x -= 1
-                if ([y+1,x] in wall):
-                    return [y+1,x]
+                if ([c,r+1] in wall):
+                    return [c,r+1]
+                c -= 1
+                if ([c,r+1] in wall):
+                    return [c,r+1]
     elif (beta <= math.pi*7/4):
-        while (abs(y)<abs(ydist)):
-            y -= 1
-            if (abs(y/math.tan(beta))<abs(x+1)):
-                if ([y+1,x] in wall):
-                    return [y+1,x]
+        while (abs(r)<abs(ydist)):
+            r -= 1
+            if (abs(r/math.tan(beta))<abs(c+1)):
+                if ([c,r+1] in wall):
+                    return [c,r+1]
             else:
-                if ([y+1,x] in wall):
-                    return [y+1,x]
-                x += 1
-                if ([y+1,x] in wall):
-                    return [y+1,x]
+                if ([c,r+1] in wall):
+                    return [c,r+1]
+                c += 1
+                if ([c,r+1] in wall):
+                    return [c,r+1]
     elif (beta <= math.pi*2):
-        while (abs(x)<abs(xdist)):
-            x += 1
-            if (abs(x*math.tan(beta))<abs(y-1)):
-                if ([y,x-1] in wall):
-                    return [y,x-1]
+        while (abs(c)<abs(xdist)):
+            c += 1
+            if (abs(c*math.tan(beta))<abs(r-1)):
+                if ([c-1,r] in wall):
+                    return [c-1,r]
             else:
-                if ([y,x-1] in wall):
-                    return [y,x-1]
-                y -= 1
-                if ([y,x-1] in wall):
-                    return [y,x-1]
+                if ([c-1,r] in wall):
+                    return [c-1,r]
+                r -= 1
+                if ([c-1,r] in wall):
+                    return [c-1,r]
     else:
         print("Angle greater than 2pi error")
     return None
@@ -221,10 +210,6 @@ class Class_Counter(Node):
         self.map_width = self.map_msg.info.width
         self.map_height = self.map_msg.info.height
         self.map_data = self.map_msg.data
-        print(self.map_msg.info.origin.orientation.x)
-        print(self.map_msg.info.origin.orientation.y)
-        print(self.map_msg.info.origin.orientation.z)
-        print(self.map_msg.info.origin.orientation.w)
         self.map_yaw = euler_from_quaternion(self.map_msg.info.origin.orientation.x, self.map_msg.info.origin.orientation.y, self.map_msg.info.origin.orientation.z, self.map_msg.info.origin.orientation.w)
 
 
@@ -235,30 +220,29 @@ class Class_Counter(Node):
         self.odom_yaw = euler_from_quaternion(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
         
-        print("yaw: " + str(self.odom_yaw))
-        print("odom_x: " + str(self.odom_x))
-        print("odom_y: " + str(self.odom_y))
+        #print("yaw: " + str(self.odom_yaw))
+        #print("odom_x: " + str(self.odom_x))
+        #print("odom_y: " + str(self.odom_y))
 
     def perform_logic(self, class_name, top, left, bottom, right):
-        print(self.odom_yaw)
         # Ensure both messages are available
         if self.map_msg is not None and self.odom_msg is not None and class_name is not None:
             #Extract walls from map data
-            print("og wall:")
-            print(self.map_data)
+            #print("og wall:")
+            #print(self.map_data)
             reshaped_data = np.array(self.map_data).reshape(self.map_height, self.map_width)
-            print("reshaped_data:")
-            print(reshaped_data)
+            #print("reshaped_data:")
+            #print(reshaped_data)
             wall = np.where(reshaped_data == 100)
-            print("wall 1:")
-            print(wall)
-            wall = np.column_stack(wall) #check what this actually is
-            print("wall2")
-            print(wall)
+            #print("wall 1:")
+            #print(wall)
+            wall = np.column_stack(wall) #gives it out in (row,column)
+            #print("wall2")
+            #print(wall)
 
             #Robot position to calculate angle from map frame
-            robot_x = int((self.odom_y - self.map_originY)/self.map_resolution)
-            robot_y = int((self.odom_x - self.map_originX) / self.map_resolution)
+            robot_row = int((self.odom_y - self.map_originY)/self.map_resolution)
+            robot_column = int((self.odom_x - self.map_originX) / self.map_resolution)
 
             #Robot yaw to calculate angle camera is facing
             robot_yaw = self.odom_yaw
@@ -267,8 +251,8 @@ class Class_Counter(Node):
             picture_x = (top+bottom)/2
             picture_y = (left+right)/2#Consider adding check to avoid extra chair detection
             angle = (picture_x-160)*(math.pi/2)/(320.0) #convert location on screen to angle (roughly) 
-            print("robot_x: " + str(int((self.odom_x - self.map_originX)/self.map_resolution)))
-            print("robot_y: " + str(int((self.odom_y - self.map_originY)/self.map_resolution)))
+            print("robot_row: " + str(robot_row))
+            print("robot_column: " + str(robot_column))
             print("robot_yaw: " + str(robot_yaw))
             print("map_originX: " + str(self.map_originX))
             print("map_originY: " + str(self.map_originY))
@@ -279,7 +263,8 @@ class Class_Counter(Node):
             #picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
             #TEMPORARY
             dist = 50
-            picture_mapped_location = bresenhams_line_algorithm(robot_yaw, angle, dist, wall, robot_x, robot_y)
+            picture_mapped_location_grid = bresenhams_line_algorithm(robot_yaw, angle, dist, wall, robot_column, robot_row)#returns (row,column)
+            picture_mapped_location = [picture_mapped_location_grid[0]*self.map_resolution+self.map_originX,picture_mapped_location_grid[1]*self.map_resolution+self.map_originY]#converts to (x,y) relative to origin
             #for each step forward in bl, check if it's a wall
             if (picture_mapped_location is not None):
                 #TEMPORARY
