@@ -3,17 +3,14 @@ from rclpy.node import Node
 from std_msgs.msg import String  # Replace with your specific message types
 from yolov8_msgs.msg import Yolov8Inference
 from nav_msgs.msg import OccupancyGrid, Odometry
-from sensor_msgs.msg import LaserScan
 
 import numpy as np
 import math
 
-from rclpy.qos import qos_profile_sensor_data
-
 list_class = ["cat", "dog", "chair", "car", "apple", "stop sign"]
 list_pos = [] #Contains [x,y]
 dict_count = {"cat": 0, "dog": 0, "chair": 0, "car": 0, "apple": 0, "stop sign": 0} #Contains "cat": 1
-item_list_pos = {"cat": [], "dog": [], "chair": [], "car": [], "apple": [], "stop sign": []}
+
 
 def euler_from_quaternion(x, y, z, w):
     t0 = +2.0 * (w * x + y * z)
@@ -29,23 +26,27 @@ def euler_from_quaternion(x, y, z, w):
     return yaw_z
 
 #Given detected class and its position on the map, add to the count if it's not too close to existing stored positions
-def add_to_count(class_name, position, limit_distance):
-    print("spotted a: " + class_name)
+def add_to_count(class_name, position, somedistance):
+    print(class_name + " detected at " + str(position[0]) + ", " + str(position[1]))
     if (class_name in list_class):
-        eligible = True
+        #print(class_name + " is in list_class")
+        eligible = False
         #If list_pos is empty, make the first entry eligible
-        if not item_list_pos[class_name]:
-            print("list is empty")
+        if not list_pos:
             eligible = True
-        for i in item_list_pos[class_name]:
+        for i in list_pos:
             #if true keep going in the for loop
             #if false for all, eligible = True and break out
-            if ((((position[0]-i[0])**2)+((position[1]-i[1])**2))<limit_distance):
-                eligible = False
+            if ((((position[0]-i[0])**2)+((position[1]-i[1])**2))<somedistance):
                 break
-        if (eligible):
+            eligible = True
+            print("i: ")
+            print(i)
+            print("position: ")
+            print(position)
+        if (eligible == True):
             dict_count[class_name] += 1
-            item_list_pos[class_name].append(position)
+            list_pos.append(position)
             print(class_name + " added")
             print(dict_count)
             print(list_pos)
@@ -188,8 +189,6 @@ class Class_Counter(Node):
             OccupancyGrid, 'map', self.map_callback, 10)
         self.yolo_subscription = self.create_subscription(
             Odometry, 'odom', self.odom_callback, 10)
-        self.yolo_subscription = self.create_subscription(
-            LaserScan, 'scan', self.scan_callback, qos_profile_sensor_data)
         self.yolo_subscription
 
         # Variables to store latest messages
@@ -244,25 +243,56 @@ class Class_Counter(Node):
         #print("odom_x: " + str(self.odom_x))
         #print("odom_y: " + str(self.odom_y))
 
-    def scan_callback(self, msg):
-        self.scan_msg = msg
-        self.ranges = msg.ranges
-        self.angle_increment = msg.angle_increment
-
     def perform_logic(self, class_name, top, left, bottom, right):
-        picture_y = (top+bottom)/2
-        picture_x = (left+right)/2#Consider adding check to avoid extra chair detection
-        #if (picture_y<200):
-        angle = (picture_x-160)*(1.204)/(320.0) #convert location on screen to angle (roughly)
-        #distance = self.ranges[min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1)]
-        #print(min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1))
-        distance = self.ranges[0]
-        position = [self.odom_x+distance*math.cos(angle), self.odom_y+distance*math.sin(angle)]
-        limit_distance = 2
-        #print(position)
-        #print(distance)
-        add_to_count(class_name, position, limit_distance) #add somedistance, can divide by map resolution also
+        # Ensure both messages are available
+        if self.map_msg is not None and self.odom_msg is not None and class_name is not None:
+            #Extract walls from map data
+            #print("og wall:")
+            #print(self.map_data)
+            reshaped_data = np.array(self.map_data).reshape(self.map_height, self.map_width)
+            print("reshaped_data:")
+            print(reshaped_data)
+            wall = np.where(reshaped_data == 100)
+            print("wall 1:")
+            print(wall)
+            wall = np.column_stack(wall) #gives it out in (row,column)
+            print("wall2")
+            print(wall)
 
+            #Robot position to calculate angle from map frame
+            robot_row = int((self.odom_y - self.map_originY)/self.map_resolution)
+            robot_column = int((self.odom_x - self.map_originX) / self.map_resolution)
+
+            #Robot yaw to calculate angle camera is facing
+            robot_yaw = self.odom_yaw
+
+            #Picture xy to calculate angle of picture from lens
+            picture_x = (top+bottom)/2
+            picture_y = (left+right)/2#Consider adding check to avoid extra chair detection
+            angle = (picture_x-160)*(1.204)/(320.0) #convert location on screen to angle (roughly) 
+            print("robot_row: " + str(robot_row))
+            print("robot_column: " + str(robot_column))
+            print("robot_yaw: " + str(robot_yaw))
+            print("map_originX: " + str(self.map_originX))
+            print("map_originY: " + str(self.map_originY))
+            print("odom_x: " + str(self.odom_x))
+            print("odom_y: " + str(self.odom_y))
+            #print("map_yaw: " + str(self.map_yaw))
+            #Check occupancygrid for the code below. After checking, looks like the robot_x and robot_y are taken with respect to the origin, and thus no need to take into account the map_originX and map_originY
+            #picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
+            #TEMPORARY
+            dist = 50
+            picture_mapped_location_grid = bresenhams_line_algorithm(robot_yaw, angle, dist, wall, robot_column, robot_row)#returns (row,column)
+            print("picture_mapped_location_grid")
+            print(picture_mapped_location_grid)
+            #for each step forward in bl, check if it's a wall
+            if (picture_mapped_location_grid is not None):
+                picture_mapped_location = [picture_mapped_location_grid[0]*self.map_resolution+self.map_originX,picture_mapped_location_grid[1]*self.map_resolution+self.map_originY]#converts to (x,y) relative to origin
+                #TEMPORARY
+                somedistance = 0.6
+                add_to_count(class_name, picture_mapped_location, somedistance) #add somedistance, can divide by map resolution also
+        self.latest_msg1 = None
+        self.latest_msg2 = None
 
 def main(args=None):
     rclpy.init(args=args)
