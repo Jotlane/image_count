@@ -60,6 +60,8 @@ def bresenhams_line_algorithm(theta, gamma, dist, wall, robot_x, robot_y):
     #and also how the initial map angle is decided
     #Make beta a number from 0 to 2pi
     #let it run and see how the robot yaw and map angle stuff changes
+    #coordinates will change for the position of the animals because the map expands and all, must make it relative to the origin
+    #I guess store the true position instead
     while (beta > 2*math.pi):
         beta -= 2*math.pi
     while (beta < 0):
@@ -232,6 +234,10 @@ class Class_Counter(Node):
         self.odom_y = msg.pose.pose.position.y
         self.odom_yaw = euler_from_quaternion(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
                                               msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+        
+        print("yaw: " + str(self.odom_yaw))
+        print("odom_x: " + str(self.odom_x))
+        print("odom_y: " + str(self.odom_y))
 
     def perform_logic(self, class_name, top, left, bottom, right):
         print(self.odom_yaw)
@@ -261,14 +267,14 @@ class Class_Counter(Node):
             picture_x = (top+bottom)/2
             picture_y = (left+right)/2#Consider adding check to avoid extra chair detection
             angle = (picture_x-160)*(math.pi/2)/(320.0) #convert location on screen to angle (roughly) 
-            print("robot_x: " + str(robot_x))
-            print("robot_y: " + str(robot_y))
+            print("robot_x: " + str(int((self.odom_x - self.map_originX)/self.map_resolution)))
+            print("robot_y: " + str(int((self.odom_y - self.map_originY)/self.map_resolution)))
             print("robot_yaw: " + str(robot_yaw))
             print("map_originX: " + str(self.map_originX))
             print("map_originY: " + str(self.map_originY))
             print("odom_x: " + str(self.odom_x))
             print("odom_y: " + str(self.odom_y))
-            print("map_yaw: " + str(self.map_yaw))
+            #print("map_yaw: " + str(self.map_yaw))
             #Check occupancygrid for the code below. After checking, looks like the robot_x and robot_y are taken with respect to the origin, and thus no need to take into account the map_originX and map_originY
             #picture_mapped_location = bresenhams_line_algorithm(math.tan(robot_y-self.map_originY,robot_x-self.map_originX), robot_yaw, angle, dist, wall, robot_x, robot_y)
             #TEMPORARY
