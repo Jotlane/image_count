@@ -42,6 +42,8 @@ def add_to_count(class_name, position, limit_distance):
             #if false for all, eligible = True and break out
             if ((((position[0]-i[0])**2)+((position[1]-i[1])**2))<limit_distance):
                 eligible = False
+                #try this out
+                item_list_pos[class_name].append(position)
                 break
         if (eligible):
             dict_count[class_name] += 1
@@ -252,16 +254,16 @@ class Class_Counter(Node):
     def perform_logic(self, class_name, top, left, bottom, right):
         picture_y = (top+bottom)/2
         picture_x = (left+right)/2#Consider adding check to avoid extra chair detection
-        #if (picture_y<200):
-        angle = (picture_x-160)*(1.204)/(320.0) #convert location on screen to angle (roughly)
-        #distance = self.ranges[min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1)]
-        #print(min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1))
-        distance = self.ranges[0]
-        position = [self.odom_x+distance*math.cos(angle), self.odom_y+distance*math.sin(angle)]
-        limit_distance = 2
-        #print(position)
-        #print(distance)
-        add_to_count(class_name, position, limit_distance) #add somedistance, can divide by map resolution also
+        if (picture_y>65):
+            angle = (picture_x-160)*(1.204)/(320.0) #convert location on screen to angle (roughly)
+            #distance = self.ranges[min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1)]
+            #print(min(round((self.odom_yaw+math.pi)/self.angle_increment),len(self.ranges)-1))
+            distance = self.ranges[0]
+            position = [self.odom_x+distance*math.cos(angle), self.odom_y+distance*math.sin(angle)]
+            limit_distance = 3
+            #print(position)
+            #print(distance)
+            add_to_count(class_name, position, limit_distance) #add somedistance, can divide by map resolution also
 
 
 def main(args=None):
